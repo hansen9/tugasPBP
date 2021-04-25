@@ -1,29 +1,46 @@
 package controllers
 
 import (
-	"encoding/json"
+	// "encoding/json"
+	// "log"
 	"net/http"
+	// models "github.com/tubes/models"
+	// "github.com/gorilla/mux"
 )
 
-func sendSuccessResponse(w http.ResponseWriter) {
-	var response Response
-	response.Status = 200
-	response.Message = "success"
-	w.Header().Set("Content-Type", "application/json")
-}
+// Register...
+func Register(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	defer db.Close()
 
-func sendErrorResponse(w http.ResponseWriter) {
-	var response Response
-	response.Status = 400
-	response.Message = "Failed"
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
+	err := r.ParseForm()
+	if err != nil {
+		return
+	}
 
-func sendUnAuthorizedResponse(w http.ResponseWriter) {
-	var response Response
-	response.Status = 401
-	response.Message = "Unauthorized Access"
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	email := r.Form.Get("email")
+	nama := r.Form.Get("nama")
+	password := r.Form.Get("password")
+	tgl_lahir := r.Form.Get("tgl_lahir")
+	jns_kelamin := r.Form.Get("jns_kelamin")
+	asal_negara := r.Form.Get("asal_negara")
+	status := "Aktif"
+	tipe_user := 0
+
+	_, errQuery := db.Exec("INSERT INTO user(email,nama,password,tgl_lahir,jns_kelamin,asal_negara,status,tipe_user) VALUES (?,?,?,?,?,?,?,?)",
+		email,
+		nama,
+		password,
+		tgl_lahir,
+		jns_kelamin,
+		asal_negara,
+		status,
+		tipe_user,
+	)
+
+	if errQuery == nil {
+		sendFilmSuccessResponse(w, nil)
+	} else {
+		sendErrorResponse(w)
+	}
 }

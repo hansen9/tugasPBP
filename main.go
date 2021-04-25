@@ -7,14 +7,21 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	controllers "github.com/latihan/controllers"
+	controllers "github.com/tubes/controllers"
 	"github.com/rs/cors"
 )
 
 func main() {
 	router := mux.NewRouter()
 
-	// Routes
+	// Admin Routes
+	router.HandleFunc("/admin/get_member", controllers.GetMemberByEmail).Methods("GET")
+	router.HandleFunc("/admin/suspend_member/{email}", controllers.SuspendMember).Methods("PUT")
+	router.HandleFunc("/admin/insert_film", controllers.InsertFilm).Methods("POST")
+	router.HandleFunc("/admin/update_film/{id}", controllers.UpdateFilmById).Methods("PUT")
+
+	// Member Routes
+	router.HandleFunc("/member/register", controllers.Register).Methods("POST")
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3800"},
@@ -24,6 +31,6 @@ func main() {
 	handler := corsHandler.Handler(router)
 
 	http.Handle("/", handler)
-	fmt.Println("Connected to port 8080")
-	log.Fatal(http.ListenAndServe(":8080", router))
+	fmt.Println("Connected to port 9090")
+	log.Fatal(http.ListenAndServe(":9090", router))
 }
