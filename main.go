@@ -22,6 +22,7 @@ func main() {
 
 	// Member Routes
 	router.HandleFunc("/member/register", controllers.Register).Methods("POST")
+	router.HandleFunc("/member/get_film", controllers.GetFilm).Methods("GET")
 	router.HandleFunc("/member/update/{email}", controllers.UpdateMember).Methods("PUT")
 
 	corsHandler := cors.New(cors.Options{
