@@ -7,8 +7,8 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	controllers "github.com/tubes/controllers"
 	"github.com/rs/cors"
+	controllers "github.com/tubes/controllers"
 )
 
 func main() {
@@ -22,6 +22,7 @@ func main() {
 
 	// Member Routes
 	router.HandleFunc("/member/register", controllers.Register).Methods("POST")
+	router.HandleFunc("/member/update/{email}", controllers.UpdateMember).Methods("PUT")
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3800"},
