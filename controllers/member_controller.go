@@ -4,8 +4,8 @@ import (
 	// "encoding/json"
 	// "log"
 	"net/http"
-	// models "github.com/tubes/models"
-	// "github.com/gorilla/mux"
+
+	"github.com/gorilla/mux"
 )
 
 // Register...
@@ -40,6 +40,36 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	if errQuery == nil {
 		sendFilmSuccessResponse(w, nil)
+	} else {
+		sendErrorResponse(w)
+	}
+}
+
+// Update
+func UpdateMember(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	defer db.Close()
+
+	err := r.ParseForm()
+	if err != nil {
+		return
+	}
+
+	vars := mux.Vars(r)
+	email := vars["email"]
+	nama := r.Form.Get("nama")
+	tgl_lahir := r.Form.Get("tgl_lahir")
+	jns_kelamin := r.Form.Get("jns_kelamin")
+
+	_, errQuery := db.Exec("UPDATE user SET nama=?, tgl_lahir=?, jns_kelamin=? WHERE tipe_user=0 AND email=?",
+		nama,
+		tgl_lahir,
+		jns_kelamin,
+		email,
+	)
+
+	if errQuery == nil {
+		sendUserSuccessResponse(w, nil)
 	} else {
 		sendErrorResponse(w)
 	}
