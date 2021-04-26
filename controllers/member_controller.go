@@ -3,9 +3,12 @@ package controllers
 import (
 	// "encoding/json"
 	// "log"
+
+	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	models "github.com/tubes/models"
 )
 
 // Register...
@@ -40,6 +43,101 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	if errQuery == nil {
 		sendFilmSuccessResponse(w, nil)
+	} else {
+		sendErrorResponse(w)
+	}
+}
+
+//GetFilm
+func MemberGetFilm(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	defer db.Close()
+
+	query := "SELECT * FROM film"
+
+	judul := r.URL.Query()["judul"]
+	tahun := r.URL.Query()["tahun"]
+	genre := r.URL.Query()["genre"]
+	pemain_utama := r.URL.Query()["pemain_utama"]
+	sutradara := r.URL.Query()["sutradara"]
+	sinopsis := r.URL.Query()["sinopsis"]
+	if judul != nil {
+		query += " WHERE judul LIKE '%" + judul[0] + "%'"
+		if tahun != nil {
+			query += " AND tahun LIKE '%" + tahun[0] + "%'"
+		}
+		if genre != nil {
+			query += " AND genre LIKE '%" + genre[0] + "%'"
+		}
+		if pemain_utama != nil {
+			query += " AND pemain_utama LIKE '%" + pemain_utama[0] + "%'"
+		}
+		if sutradara != nil {
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
+		}
+		if sinopsis != nil {
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
+		}
+	} else if tahun != nil {
+		query += " WHERE tahun LIKE '%" + tahun[0] + "%'"
+		if genre != nil {
+			query += " AND genre LIKE '%" + genre[0] + "%'"
+		}
+		if pemain_utama != nil {
+			query += " AND pemain_utama LIKE '%" + pemain_utama[0] + "%'"
+		}
+		if sutradara != nil {
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
+		}
+		if sinopsis != nil {
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
+		}
+	} else if genre != nil {
+		query += " WHERE genre LIKE '%" + genre[0] + "%'"
+		if pemain_utama != nil {
+			query += " AND pemain_utama LIKE '%" + pemain_utama[0] + "%'"
+		}
+		if sutradara != nil {
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
+		}
+		if sinopsis != nil {
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
+		}
+	} else if pemain_utama != nil {
+		query += " WHERE pemain_utama LIKE '%" + pemain_utama[0] + "%'"
+		if sutradara != nil {
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
+		}
+		if sinopsis != nil {
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
+		}
+	} else if sutradara != nil {
+		query += " WHERE sutradara LIKE '%" + sutradara[0] + "%'"
+		if sinopsis != nil {
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
+		}
+	} else if sinopsis != nil {
+		query += " WHERE sinopsis LIKE '%" + sinopsis[0] + "%'"
+	}
+
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Println(err)
+	}
+
+	var film models.Film
+	var films []models.Film
+	for rows.Next() {
+		if err := rows.Scan(&film.ID, &film.Judul, &film.Tahun, &film.Genre, &film.Sutradara, &film.PemainUtama, &film.Sinopsis); err != nil {
+			sendErrorResponse(w)
+		} else {
+			films = append(films, film)
+
+		}
+	}
+
+	if len(films) > 0 {
+		sendFilmSuccessResponse(w, films)
 	} else {
 		sendErrorResponse(w)
 	}

@@ -4,8 +4,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	models "github.com/tubes/models"
+
 	"github.com/gorilla/mux"
+	models "github.com/tubes/models"
 )
 
 // GetMemberByEmail...
@@ -28,7 +29,7 @@ func GetMemberByEmail(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	var users []models.User
 	for rows.Next() {
-		if err := rows.Scan(&user.Email, &user.Name, &user.Password, &user.TanggalLahir, 
+		if err := rows.Scan(&user.Email, &user.Name, &user.Password, &user.TanggalLahir,
 			&user.JenisKelamin, &user.AsalNegara, &user.Status, &user.TipeUser); err != nil {
 			sendErrorResponse(w)
 		} else {
@@ -57,6 +58,45 @@ func SuspendMember(w http.ResponseWriter, r *http.Request) {
 
 	if errQuery == nil {
 		sendUserSuccessResponse(w, nil)
+	} else {
+		sendErrorResponse(w)
+	}
+}
+
+//AdminGetFilm
+func AdminGetFilm(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	defer db.Close()
+
+	query := "SELECT * FROM film"
+
+	id := r.URL.Query()["id"]
+	judul := r.URL.Query()["judul"]
+
+	if id != nil {
+		query += " WHERE id_film = " + id[0]
+	} else if judul != nil {
+		query += " WHERE judul LIKE '%" + judul[0] + "%'"
+	}
+
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Println(err)
+	}
+
+	var film models.Film
+	var films []models.Film
+	for rows.Next() {
+		if err := rows.Scan(&film.ID, &film.Judul, &film.Tahun, &film.Genre, &film.Sutradara, &film.PemainUtama, &film.Sinopsis); err != nil {
+			sendErrorResponse(w)
+		} else {
+			films = append(films, film)
+
+		}
+	}
+
+	if len(films) > 0 {
+		sendFilmSuccessResponse(w, films)
 	} else {
 		sendErrorResponse(w)
 	}
