@@ -19,10 +19,11 @@ func main() {
 	router.HandleFunc("/admin/suspend_member/{email}", controllers.SuspendMember).Methods("PUT")
 	router.HandleFunc("/admin/insert_film", controllers.InsertFilm).Methods("POST")
 	router.HandleFunc("/admin/update_film/{id}", controllers.UpdateFilmById).Methods("PUT")
+	router.HandleFunc("/admin/search", controllers.AdminGetFilm).Methods("GET")
 
 	// Member Routes
 	router.HandleFunc("/member/register", controllers.Register).Methods("POST")
-	router.HandleFunc("/member/get_film", controllers.GetFilm).Methods("GET")
+	router.HandleFunc("/member/search", controllers.MemberGetFilm).Methods("GET")
 	router.HandleFunc("/member/update/{email}", controllers.UpdateMember).Methods("PUT")
 
 	corsHandler := cors.New(cors.Options{

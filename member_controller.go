@@ -49,7 +49,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 }
 
 //GetFilm
-func GetFilm(w http.ResponseWriter, r *http.Request) {
+func MemberGetFilm(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
 
@@ -62,62 +62,62 @@ func GetFilm(w http.ResponseWriter, r *http.Request) {
 	sutradara := r.URL.Query()["sutradara"]
 	sinopsis := r.URL.Query()["sinopsis"]
 	if judul != nil {
-		query += " WHERE judul = '" + judul[0] + "'"
+		query += " WHERE judul LIKE '%" + judul[0] + "%'"
 		if tahun != nil {
-			query += " AND tahun = '" + tahun[0] + "'"
+			query += " AND tahun LIKE '%" + tahun[0] + "%'"
 		}
 		if genre != nil {
-			query += " AND genre = '" + genre[0] + "'"
+			query += " AND genre LIKE '%" + genre[0] + "%'"
 		}
 		if pemain_utama != nil {
-			query += " AND pemain_utama = '" + pemain_utama[0] + "'"
+			query += " AND pemain_utama LIKE '%" + pemain_utama[0] + "%'"
 		}
 		if sutradara != nil {
-			query += " AND sutradara = '" + sutradara[0] + "'"
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
 		}
 		if sinopsis != nil {
-			query += " AND sinopsis = '" + sinopsis[0] + "'"
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
 		}
 	} else if tahun != nil {
-		query += " WHERE tahun = '" + tahun[0] + "'"
+		query += " WHERE tahun LIKE '%" + tahun[0] + "%'"
 		if genre != nil {
-			query += " AND genre = '" + genre[0] + "'"
+			query += " AND genre LIKE '%" + genre[0] + "%'"
 		}
 		if pemain_utama != nil {
-			query += " AND pemain_utama = '" + pemain_utama[0] + "'"
+			query += " AND pemain_utama LIKE '%" + pemain_utama[0] + "%'"
 		}
 		if sutradara != nil {
-			query += " AND sutradara = '" + sutradara[0] + "'"
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
 		}
 		if sinopsis != nil {
-			query += " AND sinopsis = '" + sinopsis[0] + "'"
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
 		}
 	} else if genre != nil {
-		query += " WHERE genre = '" + genre[0] + "'"
+		query += " WHERE genre LIKE '%" + genre[0] + "%'"
 		if pemain_utama != nil {
-			query += " AND pemain_utama = '" + pemain_utama[0] + "'"
+			query += " AND pemain_utama LIKE '%" + pemain_utama[0] + "%'"
 		}
 		if sutradara != nil {
-			query += " AND sutradara = '" + sutradara[0] + "'"
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
 		}
 		if sinopsis != nil {
-			query += " AND sinopsis = '" + sinopsis[0] + "'"
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
 		}
 	} else if pemain_utama != nil {
-		query += " WHERE pemain_utama = '" + pemain_utama[0] + "'"
+		query += " WHERE pemain_utama LIKE '%" + pemain_utama[0] + "%'"
 		if sutradara != nil {
-			query += " AND sutradara = '" + sutradara[0] + "'"
+			query += " AND sutradara LIKE '%" + sutradara[0] + "%'"
 		}
 		if sinopsis != nil {
-			query += " AND sinopsis = '" + sinopsis[0] + "'"
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
 		}
 	} else if sutradara != nil {
-		query += " WHERE sutradara = '" + sutradara[0] + "'"
+		query += " WHERE sutradara LIKE '%" + sutradara[0] + "%'"
 		if sinopsis != nil {
-			query += " AND sinopsis = '" + sinopsis[0] + "'"
+			query += " AND sinopsis LIKE '%" + sinopsis[0] + "%'"
 		}
 	} else if sinopsis != nil {
-		query += " WHERE sinopsis = '" + sinopsis[0] + "'"
+		query += " WHERE sinopsis LIKE '%" + sinopsis[0] + "%'"
 	}
 
 	rows, err := db.Query(query)
