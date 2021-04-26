@@ -23,6 +23,8 @@ func main() {
 	// Member Routes
 	router.HandleFunc("/member/register", controllers.Register).Methods("POST")
 	router.HandleFunc("/member/update/{email}", controllers.UpdateMember).Methods("PUT")
+	router.HandleFunc("/member/menonton", controllers.Menonton).Methods("POST")
+	router.HandleFunc("/member/riwayat", controllers.Riwayat).Methods("GET")
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3800"},
