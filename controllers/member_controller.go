@@ -11,7 +11,7 @@ import (
 	models "github.com/tubes/models"
 )
 
-// Register...
+// Register (insert member)
 func Register(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -48,7 +48,7 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//GetFilm
+// Search film for member
 func MemberGetFilm(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -143,7 +143,7 @@ func MemberGetFilm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Update
+// Update member
 func UpdateMember(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -173,7 +173,7 @@ func UpdateMember(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//menonton film
+// Watch
 func Menonton(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -213,7 +213,7 @@ func Riwayat(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
 
-	query := "select f.id_film,f.judul,f.tahun,f.genre,f.sutradara,f.pemain_utama,f.sinopsis from riwayat r inner join film f on f.id_film = r.id_film inner join user u on u.email = r.email_member"
+	query := "SELECT f.id_film,f.judul,f.tahun,f.genre,f.sutradara,f.pemain_utama,f.sinopsis FROM riwayat r INNER JOIN film f ON f.id_film = r.id_film INNER JOIN user u ON u.email = r.email_member"
 
 	email := r.URL.Query()["email"]
 	if email != nil {

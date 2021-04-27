@@ -9,7 +9,7 @@ import (
 	models "github.com/tubes/models"
 )
 
-// GetMemberByEmail...
+// Find member by email
 func GetMemberByEmail(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -39,7 +39,7 @@ func GetMemberByEmail(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UpdateUser...
+// Suspend member
 func SuspendMember(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -63,7 +63,7 @@ func SuspendMember(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//AdminGetFilm
+// Search film for admin
 func AdminGetFilm(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -102,7 +102,7 @@ func AdminGetFilm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// InsertFilm...
+// Insert film
 func InsertFilm(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -135,7 +135,7 @@ func InsertFilm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UpdateFilmById...
+// Update film by Id
 func UpdateFilmById(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
