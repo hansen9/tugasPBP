@@ -89,6 +89,7 @@ func AdminGetFilm(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		if err := rows.Scan(&film.ID, &film.Judul, &film.Tahun, &film.Genre, &film.Sutradara, &film.PemainUtama, &film.Sinopsis); err != nil {
 			sendErrorResponse(w)
+			log.Fatal(err.Error())
 		} else {
 			films = append(films, film)
 

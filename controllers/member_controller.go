@@ -1,13 +1,10 @@
 package controllers
 
 import (
-	// "encoding/json"
-	// "log"
-
 	"log"
 	"net/http"
-
-	"github.com/gorilla/mux"
+	"strconv"
+	"time"
 	models "github.com/tubes/models"
 )
 
@@ -46,6 +43,33 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	} else {
 		sendErrorResponse(w)
 	}
+}
+
+//Signin
+func Signin(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	defer db.Close()
+
+	email := r.URL.Query()["email"]
+	password := r.URL.Query()["password"]
+
+	row := db.QueryRow("SELECT * FROM user WHERE email=? AND password=?", email[0], password[0])
+
+	var user models.User
+	if err := row.Scan(&user.Email, &user.Name, &user.Password, &user.TanggalLahir,
+		&user.JenisKelamin, &user.AsalNegara, &user.Status, &user.TipeUser); err != nil {
+		sendErrorResponse(w)
+	} else {
+		generateToken(w, user.Email, user.Name, user.TipeUser)
+		sendSuccessResponse(w)
+	}
+}
+
+// Signout
+func Signout(w http.ResponseWriter, r *http.Request) {
+	resetUserToken(w)
+
+	sendSuccessResponse(w)
 }
 
 // Search film for member
@@ -143,7 +167,7 @@ func MemberGetFilm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Update member
+// Update member profile
 func UpdateMember(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
@@ -153,8 +177,7 @@ func UpdateMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	email := vars["email"]
+	email := getID(r)
 	nama := r.Form.Get("nama")
 	tgl_lahir := r.Form.Get("tgl_lahir")
 	jns_kelamin := r.Form.Get("jns_kelamin")
@@ -173,64 +196,101 @@ func UpdateMember(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Subscribing
+func Subscribe(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	defer db.Close()
+
+	err := r.ParseForm()
+	if err != nil {
+		return
+	}
+
+	email := getID(r)
+
+	paket := r.Form.Get("paket")
+	no_cc, _ := strconv.Atoi(r.Form.Get("no_cc"))
+	masa_berlaku := r.Form.Get("masa_berlaku")
+	kode_cvc, _ := strconv.Atoi(r.Form.Get("kode_cvc"))
+	tgl_langganan := time.Now()
+	tgl_berhenti := ""
+
+	_, errQuery := db.Exec("INSERT INTO subscription(email_member,paket,no_cc,masa_berlaku,kode_cvc,tgl_langganan,tgl_berhenti) VALUES (?,?,?,?,?,?,?)",
+		email,
+		paket,
+		no_cc,
+		masa_berlaku,
+		kode_cvc,
+		tgl_langganan,
+		tgl_berhenti,
+	)
+
+	if errQuery == nil {
+		sendSubscriptionSuccessResponse(w, nil)
+	} else {
+		sendErrorResponse(w)
+	}
+}
+
+// Stop subscribing
+func StopSubscribe(w http.ResponseWriter, r *http.Request) {
+	db := connect()
+	defer db.Close()
+
+	email := getID(r)
+	tgl_berhenti := time.Now()
+
+	_, errQuery := db.Exec("UPDATE subscription SET tgl_berhenti=? WHERE email_member=?",
+		tgl_berhenti,
+		email,
+	)
+
+	if errQuery == nil {
+		sendSubscriptionSuccessResponse(w, nil)
+	} else {
+		sendErrorResponse(w)
+	}
+}
+
 // Watch
 func Watch(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
+
 	err := r.ParseForm()
+	if err != nil {
+		return
+	}
 
 	id_film := r.Form.Get("id_film")
-	emailUser := r.Form.Get("email")
-	tgl_menonton := r.Form.Get("tanggal_menonton")
+	email := getID(r)
+	tgl_menonton := time.Now()
 
 	_, errQuery := db.Exec("INSERT INTO history(email_member,id_film,tgl_menonton) VALUES (?,?,?)",
-		emailUser,
+		email,
 		id_film,
 		tgl_menonton,
 	)
 
-	query := "SELECT * FROM film WHERE id_film = ?"
-	rows, err := db.Query(query, id_film)
-
-	var film models.Film
-	var films []models.Film
-
-	for rows.Next() {
-		if err := rows.Scan(&film.ID, &film.Judul, &film.Tahun, &film.Genre, &film.Sutradara, &film.PemainUtama, &film.Sinopsis); err != nil {
-			log.Fatal(err.Error)
-		} else {
-			films = append(films, film)
-		}
-	}
-
-	if err == nil && errQuery == nil {
-		sendFilmSuccessResponse(w, films)
+	if errQuery == nil {
+		sendHistorySuccessResponse(w, nil)
 	} else {
-		_, errQuery := db.Exec("UPDATE history SET tgl_menonton = ? WHERE email_member = ? AND id_film = ?",
-			tgl_menonton,
-			emailUser,
-			id_film,
-		)
-		if errQuery == nil {
-			sendFilmSuccessResponse(w, films)
-		} else {
-			sendErrorResponse(w)
-		}
+		sendErrorResponse(w)
 	}
 }
 
-//riwayat
-func ShowHistory(w http.ResponseWriter, r *http.Request) {
+// Show history
+func GetHistory(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
 
-	query := "SELECT u.email,f.id_film,f.judul,f.tahun,f.genre,f.sutradara,f.pemain_utama,f.sinopsis,h.tgl_menonton FROM history h INNER JOIN film f ON f.id_film = h.id_film INNER JOIN user u ON u.email = h.email_member"
+	email := getID(r)
 
-	email := r.URL.Query()["email"]
-	if email != nil {
-		query += " AND u.email='" + email[0] + "'"
-	}
-
+	query := "SELECT history.email_member, history.id_film, history.tgl_menonton, " +
+		"film.judul, film.tahun, film.genre, film.sutradara, film.pemain_utama, film.sinopsis " +
+		"FROM history " +
+		"JOIN film ON history.id_film = film.id_film WHERE history.email_member='" + email + "'"
+	
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Println(err)
@@ -238,15 +298,20 @@ func ShowHistory(w http.ResponseWriter, r *http.Request) {
 
 	var history models.History
 	var histories []models.History
-
 	for rows.Next() {
-		if err := rows.Scan(&history.Email, &history.Film.ID, &history.Film.Judul, &history.Film.Tahun,
-			&history.Film.Genre, &history.Film.Sutradara, &history.Film.PemainUtama, &history.Film.Sinopsis,
-			&history.TanggalMenonton); err != nil {
+		if err := rows.Scan(&history.Email, &history.Film.ID, &history.TanggalMenonton,
+			&history.Film.Judul, &history.Film.Tahun, &history.Film.Genre,
+			&history.Film.Sutradara, &history.Film.PemainUtama, &history.Film.Sinopsis); err != nil {
 			sendErrorResponse(w)
+			log.Fatal(err.Error())
 		} else {
 			histories = append(histories, history)
-			sendHistorySuccessResponse(w, histories)
 		}
+	}
+
+	if len(histories) > 0 {
+		sendHistorySuccessResponse(w, histories)
+	} else {
+		sendErrorResponse(w)
 	}
 }

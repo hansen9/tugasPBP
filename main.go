@@ -15,18 +15,24 @@ func main() {
 	router := mux.NewRouter()
 
 	// Admin Routes
-	router.HandleFunc("/admin/get_member", controllers.GetMemberByEmail).Methods("GET")
-	router.HandleFunc("/admin/suspend_member/{email}", controllers.SuspendMember).Methods("PUT")
-	router.HandleFunc("/admin/insert_film", controllers.InsertFilm).Methods("POST")
-	router.HandleFunc("/admin/update_film/{id}", controllers.UpdateFilmById).Methods("PUT")
-	router.HandleFunc("/admin/search", controllers.AdminGetFilm).Methods("GET")
+	router.HandleFunc("/admin/get_member", controllers.AdminAuthenticate(controllers.GetMemberByEmail)).Methods("GET")
+	router.HandleFunc("/admin/suspend_member/{email}", controllers.AdminAuthenticate(controllers.SuspendMember)).Methods("PUT")
+	router.HandleFunc("/admin/insert_film", controllers.AdminAuthenticate(controllers.InsertFilm)).Methods("POST")
+	router.HandleFunc("/admin/update_film/{id}", controllers.AdminAuthenticate(controllers.UpdateFilmById)).Methods("PUT")
+	router.HandleFunc("/admin/search", controllers.AdminAuthenticate(controllers.AdminGetFilm)).Methods("GET")
+
+	// Signin Singout Routes
+	router.HandleFunc("/signin", controllers.Signin).Methods("GET")
+	router.HandleFunc("/signout", controllers.Signout).Methods("GET")
 
 	// Member Routes
 	router.HandleFunc("/member/register", controllers.Register).Methods("POST")
-	router.HandleFunc("/member/search", controllers.MemberGetFilm).Methods("GET")
-	router.HandleFunc("/member/update/{email}", controllers.UpdateMember).Methods("PUT")
-	router.HandleFunc("/member/menonton", controllers.Watch).Methods("POST")
-	router.HandleFunc("/member/riwayat", controllers.ShowHistory).Methods("GET")
+	router.HandleFunc("/member/search", controllers.MemberAuthenticate(controllers.MemberGetFilm)).Methods("GET")
+	router.HandleFunc("/member/update", controllers.MemberAuthenticate(controllers.UpdateMember)).Methods("PUT")
+	router.HandleFunc("/member/subscribe", controllers.MemberAuthenticate(controllers.Subscribe)).Methods("POST")
+	router.HandleFunc("/member/cancel_subscription", controllers.MemberAuthenticate(controllers.StopSubscribe)).Methods("PUT")
+	router.HandleFunc("/member/watch", controllers.MemberAuthenticate(controllers.Watch)).Methods("POST")
+	router.HandleFunc("/member/history", controllers.MemberAuthenticate(controllers.GetHistory)).Methods("GET")
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3800"},
