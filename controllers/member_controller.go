@@ -174,21 +174,23 @@ func UpdateMember(w http.ResponseWriter, r *http.Request) {
 }
 
 // Watch
-func Menonton(w http.ResponseWriter, r *http.Request) {
+func Watch(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
+	err := r.ParseForm()
 
-	id_film := r.URL.Query()["id_film"]
-	emailUser := r.URL.Query()["email"]
-	tgl_menonton := r.URL.Query()["tanggal_menonton"]
+	id_film := r.Form.Get("id_film")
+	emailUser := r.Form.Get("email")
+	tgl_menonton := r.Form.Get("tanggal_menonton")
 
 	_, errQuery := db.Exec("INSERT INTO riwayat(email_member,id_film,tgl_menonton) VALUES (?,?,?)",
-		emailUser[0],
-		id_film[0],
-		tgl_menonton[0],
+		emailUser,
+		id_film,
+		tgl_menonton,
 	)
+
 	query := "SELECT * FROM film WHERE id_film = ?"
-	rows, err := db.Query(query, id_film[0])
+	rows, err := db.Query(query, id_film)
 
 	var film models.Film
 	var films []models.Film
@@ -204,16 +206,25 @@ func Menonton(w http.ResponseWriter, r *http.Request) {
 	if err == nil && errQuery == nil {
 		sendFilmSuccessResponse(w, films)
 	} else {
-		sendErrorResponse(w)
+		_, errQuery := db.Exec("UPDATE riwayat SET tgl_menonton = ? WHERE email_member = ? AND id_film = ?",
+			tgl_menonton,
+			emailUser,
+			id_film,
+		)
+		if errQuery == nil {
+			sendFilmSuccessResponse(w, films)
+		} else {
+			sendErrorResponse(w)
+		}
 	}
 }
 
 //riwayat
-func Riwayat(w http.ResponseWriter, r *http.Request) {
+func ShowHistory(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
 
-	query := "SELECT f.id_film,f.judul,f.tahun,f.genre,f.sutradara,f.pemain_utama,f.sinopsis FROM riwayat r INNER JOIN film f ON f.id_film = r.id_film INNER JOIN user u ON u.email = r.email_member"
+	query := "SELECT u.email,f.id_film,f.judul,f.tahun,f.genre,f.sutradara,f.pemain_utama,f.sinopsis,r.tgl_menonton FROM riwayat r INNER JOIN film f ON f.id_film = r.id_film INNER JOIN user u ON u.email = r.email_member"
 
 	email := r.URL.Query()["email"]
 	if email != nil {
@@ -225,16 +236,17 @@ func Riwayat(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 
-	var film models.Film
-	var films []models.Film
+	var history models.History
+	var histories []models.History
 
 	for rows.Next() {
-		if err := rows.Scan(&film.ID, &film.Judul, &film.Tahun, &film.Genre,
-			&film.Sutradara, &film.PemainUtama, &film.Sinopsis); err != nil {
+		if err := rows.Scan(&history.Email, &history.Film.ID, &history.Film.Judul, &history.Film.Tahun,
+			&history.Film.Genre, &history.Film.Sutradara, &history.Film.PemainUtama, &history.Film.Sinopsis,
+			&history.TanggalMenonton); err != nil {
 			sendErrorResponse(w)
 		} else {
-			films = append(films, film)
-			sendFilmSuccessResponse(w, films)
+			histories = append(histories, history)
+			sendHistorySuccessResponse(w, histories)
 		}
 	}
 }

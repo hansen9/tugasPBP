@@ -25,8 +25,8 @@ func main() {
 	router.HandleFunc("/member/register", controllers.Register).Methods("POST")
 	router.HandleFunc("/member/search", controllers.MemberGetFilm).Methods("GET")
 	router.HandleFunc("/member/update/{email}", controllers.UpdateMember).Methods("PUT")
-	router.HandleFunc("/member/menonton", controllers.Menonton).Methods("POST")
-	router.HandleFunc("/member/riwayat", controllers.Riwayat).Methods("GET")
+	router.HandleFunc("/member/menonton", controllers.Watch).Methods("POST")
+	router.HandleFunc("/member/riwayat", controllers.ShowHistory).Methods("GET")
 
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3800"},

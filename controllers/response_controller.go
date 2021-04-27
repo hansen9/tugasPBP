@@ -33,6 +33,15 @@ func sendErrorResponse(w http.ResponseWriter) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func sendHistorySuccessResponse(w http.ResponseWriter, histories []models.History) {
+	var response models.HistoryResponse
+	response.Status = 200
+	response.Message = "Success"
+	response.Data = histories
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 // func sendUnauthorizedResponse(w http.ResponseWriter) {
 // 	var response models.ErrorResponse
 // 	response.Status = 401
