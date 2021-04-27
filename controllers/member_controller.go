@@ -183,7 +183,7 @@ func Watch(w http.ResponseWriter, r *http.Request) {
 	emailUser := r.Form.Get("email")
 	tgl_menonton := r.Form.Get("tanggal_menonton")
 
-	_, errQuery := db.Exec("INSERT INTO riwayat(email_member,id_film,tgl_menonton) VALUES (?,?,?)",
+	_, errQuery := db.Exec("INSERT INTO history(email_member,id_film,tgl_menonton) VALUES (?,?,?)",
 		emailUser,
 		id_film,
 		tgl_menonton,
@@ -206,7 +206,7 @@ func Watch(w http.ResponseWriter, r *http.Request) {
 	if err == nil && errQuery == nil {
 		sendFilmSuccessResponse(w, films)
 	} else {
-		_, errQuery := db.Exec("UPDATE riwayat SET tgl_menonton = ? WHERE email_member = ? AND id_film = ?",
+		_, errQuery := db.Exec("UPDATE history SET tgl_menonton = ? WHERE email_member = ? AND id_film = ?",
 			tgl_menonton,
 			emailUser,
 			id_film,
@@ -224,7 +224,7 @@ func ShowHistory(w http.ResponseWriter, r *http.Request) {
 	db := connect()
 	defer db.Close()
 
-	query := "SELECT u.email,f.id_film,f.judul,f.tahun,f.genre,f.sutradara,f.pemain_utama,f.sinopsis,r.tgl_menonton FROM riwayat r INNER JOIN film f ON f.id_film = r.id_film INNER JOIN user u ON u.email = r.email_member"
+	query := "SELECT u.email,f.id_film,f.judul,f.tahun,f.genre,f.sutradara,f.pemain_utama,f.sinopsis,h.tgl_menonton FROM history h INNER JOIN film f ON f.id_film = h.id_film INNER JOIN user u ON u.email = h.email_member"
 
 	email := r.URL.Query()["email"]
 	if email != nil {
