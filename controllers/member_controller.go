@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
 	models "github.com/tubes/models"
 )
 
@@ -258,6 +259,7 @@ func Watch(w http.ResponseWriter, r *http.Request) {
 	defer db.Close()
 
 	err := r.ParseForm()
+
 	if err != nil {
 		return
 	}
@@ -266,17 +268,39 @@ func Watch(w http.ResponseWriter, r *http.Request) {
 	email := getID(r)
 	tgl_menonton := time.Now()
 
-	_, errQuery := db.Exec("INSERT INTO history(email_member,id_film,tgl_menonton) VALUES (?,?,?)",
-		email,
-		id_film,
-		tgl_menonton,
-	)
+	query := "SELECT tgl_berhenti FROM subscription WHERE email_member = '" + email + "' AND tgl_berhenti = '0000-00-00'"
 
-	if errQuery == nil {
-		sendHistorySuccessResponse(w, nil)
-	} else {
-		sendErrorResponse(w)
+	rows, err := db.Query(query)
+
+	if err != nil {
+		log.Println(err)
 	}
+
+	var subscription models.Subscription
+	var subscriptions []models.Subscription
+	for rows.Next() {
+		if err := rows.Scan(&subscription.TanggalBerhenti); err != nil {
+			sendErrorResponse(w)
+		} else {
+			subscriptions = append(subscriptions, subscription)
+		}
+	}
+
+	if len(subscriptions) > 0 {
+		_, errQuery := db.Exec("INSERT INTO history(email_member,id_film,tgl_menonton) VALUES (?,?,?)",
+			email,
+			id_film,
+			tgl_menonton,
+		)
+		if errQuery == nil {
+			sendHistorySuccessResponse(w, nil)
+		} else {
+			sendErrorResponse(w)
+		}
+	} else {
+		sendWatchErrorResponse(w)
+	}
+
 }
 
 // Show history
@@ -290,7 +314,7 @@ func GetHistory(w http.ResponseWriter, r *http.Request) {
 		"film.judul, film.tahun, film.genre, film.sutradara, film.pemain_utama, film.sinopsis " +
 		"FROM history " +
 		"JOIN film ON history.id_film = film.id_film WHERE history.email_member='" + email + "'"
-	
+
 	rows, err := db.Query(query)
 	if err != nil {
 		log.Println(err)

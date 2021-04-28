@@ -59,6 +59,14 @@ func sendErrorResponse(w http.ResponseWriter) {
 	json.NewEncoder(w).Encode(response)
 }
 
+func sendWatchErrorResponse(w http.ResponseWriter) {
+	var response models.ErrorResponse
+	response.Status = 400
+	response.Message = "Failed, not yet subscribe"
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
 func sendUnauthorizedResponse(w http.ResponseWriter) {
 	var response models.ErrorResponse
 	response.Status = 401
